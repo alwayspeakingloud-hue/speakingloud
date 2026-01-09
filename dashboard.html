@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área do Aluno</title>
+
+<style>
+/* ===== HEADER POR NÍVEL ===== */
+header.basico {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+}
+header.intermediario {
+    background: linear-gradient(90deg, #065f46, #16a34a);
+}
+header.avancado {
+    background: linear-gradient(90deg, #7f1d1d, #dc2626);
+}
+
+/* ===== BASE ===== */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f1f5f9;
+}
+
+header {
+    color: white;
+    padding: 24px;
+}
+
+.container {
+    display: flex;
+    min-height: calc(100vh - 88px);
+}
+
+/* ===== MENU ===== */
+.menu {
+    width: 260px;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px;
+}
+
+.menu button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    background: #f1f5f9;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 8px;
+    transition: .2s;
+}
+
+.menu button:hover {
+    background: #dbeafe;
+    transform: translateX(6px);
+}
+
+/* ===== CONTEÚDO ===== */
+.content {
+    flex: 1;
+    padding: 30px;
+    background: #f8fafc;
+    overflow-y: auto;
+}
+
+/* ===== SEÇÕES ===== */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ===== CARDS ===== */
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    word-wrap: break-word;
+}
+
+/* ===== DOWNLOAD ===== */
+a.download {
+    display: inline-block;
+    margin-top: 10px;
+    text-decoration: none;
+    background: #2563eb;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* ===== MENU MOBILE ===== */
+.menu-toggle {
+    display: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* ===== IMAGENS ===== */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+/* ================= RESPONSIVO ================= */
+@media (max-width: 768px) {
+
+    .container {
+        flex-direction: column;
+    }
+
+    header {
+        padding: 16px;
+        text-align: center;
+    }
+
+    .menu-toggle {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .menu {
+        width: 100%;
+        display: none;
+        padding: 10px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .menu.aberto {
+        display: block;
+    }
+
+    .menu button {
+        font-size: 16px;
+        padding: 14px;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    a.download {
+        display: block;
+        width: 100%;
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+/* ===== CELULARES PEQUENOS ===== */
+@media (max-width: 480px) {
+
+    header h1 {
+        font-size: 22px;
+    }
+
+    header p {
+        font-size: 14px;
+    }
+
+    .menu button {
+        font-size: 15px;
+        padding: 12px;
+    }
+
+    .card {
+        padding: 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header id="headerAluno">
+    <h1>Área do Aluno</h1>
+    <p id="bemVindo"></p>
+    <p id="nivelAluno"></p>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+</header>
+
+<div class="container">
+
+<!-- MENU -->
+<div class="menu">
+    <button onclick="mostrar('tarefas')">📝 Tarefas</button>
+    <button onclick="mostrar('projetos')">📁 Projetos</button>
+    <button onclick="mostrar('calendario')">📅 Calendário</button>
+    <button onclick="mostrar('pagamentos')">💰 Pagamentos</button>
+    <button onclick="mostrar('meusHorarios')">🕒 Meus Horários</button>
+    <button onclick="logout()">🚪 Sair</button>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="content">
+
+<div id="tarefas" class="section active">
+    <h2>📝 Tarefas</h2>
+    <div id="listaTarefas"></div>
+</div>
+
+<div id="projetos" class="section">
+    <h2>📁 Projetos</h2>
+    <div id="listaProjetos"></div>
+</div>
+
+<div id="calendario" class="section">
+    <h2>📅 Calendário</h2>
+    <div id="listaCalendario"></div>
+</div>
+
+<div id="pagamentos" class="section">
+    <h2>💰 Meus Pagamentos</h2>
+    <div id="listaPagamentosAluno"></div>
+</div>
+
+<div id="meusHorarios" class="section">
+    <h2>🕒 Meus Horários</h2>
+    <div id="listaHorariosAluno"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+function mostrar(id){
+  document.querySelectorAll('.section')
+    .forEach(s => s.classList.remove('active'));
+
+  document.getElementById(id).classList.add('active');
+
+  const menu = document.querySelector(".menu");
+  if (menu.classList.contains("aberto")) {
+    menu.classList.remove("aberto");
+  }
+}
+
+function toggleMenu(){
+  document.querySelector(".menu").classList.toggle("aberto");
+}
+
+function logout(){
+  window.location.href = "/index.html";
+}
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCxeGPkMp6MtrIDYtSqq31xhrEnExq5xf8",
+  authDomain: "speaking-loud.firebaseapp.com",
+  projectId: "speaking-loud",
+  storageBucket: "speaking-loud.firebasestorage.app",
+  messagingSenderId: "1002979647448",
+  appId: "1:1002979647448:web:6dc375319cd8ac3aeadcad"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ================= DOM ================= */
+let nivelDoAluno = null;
+const listaPagamentosAluno = document.getElementById("listaPagamentosAluno");
+const listaHorariosAluno = document.getElementById("listaHorariosAluno");
+const listaTarefas = document.getElementById("listaTarefas");
+const listaProjetos = document.getElementById("listaProjetos");
+const listaCalendario = document.getElementById("listaCalendario");
+const bemVindo = document.getElementById("bemVindo");
+const nivelAluno = document.getElementById("nivelAluno");
+const headerAluno = document.getElementById("headerAluno");
+
+/* ================= BOLETOS ================= */
+async function renderizarPagamentosAluno(loginAluno) {
+  listaPagamentosAluno.innerHTML = "";
+
+  const q = query(
+    collection(db, "boletos"),
+    where("alunoLogin", "==", loginAluno)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    listaPagamentosAluno.innerHTML = "<p>Nenhum boleto disponível.</p>";
+    return;
+  }
+
+  snap.forEach(doc => {
+    const p = doc.data();
+    listaPagamentosAluno.innerHTML += `
+      <div class="card">
+        <strong>${p.mes}</strong><br>
+        Vencimento: ${p.vencimento}<br>
+        <a href="${p.arquivo}" download class="download">📄 Baixar boleto</a>
+      </div>
+    `;
+  });
+}
+
+/* ================= HORÁRIOS ================= */
+async function renderizarHorariosAluno(loginAluno) {
+  listaHorariosAluno.innerHTML = "";
+
+  const q = query(
+    collection(db, "horarios"),
+    where("aluno", "==", loginAluno)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    listaHorariosAluno.innerHTML = "<p>Nenhum horário cadastrado.</p>";
+    return;
+  }
+
+  snap.forEach(doc => {
+    const h = doc.data();
+    listaHorariosAluno.innerHTML += `
+      <div class="card">
+        <strong>${h.dia}</strong><br>
+        ${h.inicio} às ${h.fim}
+      </div>
+    `;
+  });
+}
+
+
+async function renderizarTarefasAluno(nivel) {
+  listaTarefas.innerHTML = "";
+
+  const q = query(
+    collection(db, "tarefas"),
+    where("nivel", "==", nivel)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    listaTarefas.innerHTML = "<p>Nenhuma tarefa disponível.</p>";
+    return;
+  }
+
+  snap.forEach(doc => {
+    const t = doc.data();
+    listaTarefas.innerHTML += `
+      <div class="card">
+        <strong>${t.unidade}</strong><br>
+        ${t.nome}<br>
+        <a href="${t.arquivo}" download class="download">📄 Baixar</a>
+      </div>
+    `;
+  });
+}
+
+
+
+async function renderizarProjetosAluno(nivel) {
+  listaProjetos.innerHTML = "";
+
+  const q = query(
+    collection(db, "projetos"),
+    where("nivel", "==", nivel)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    listaProjetos.innerHTML = "<p>Nenhum projeto disponível.</p>";
+    return;
+  }
+
+  snap.forEach(doc => {
+    const p = doc.data();
+    listaProjetos.innerHTML += `
+      <div class="card">
+        <strong>${p.nome}</strong><br>
+        ${p.descricao}<br>
+        <a href="${p.arquivo}" download class="download">📄 Baixar</a>
+      </div>
+    `;
+  });
+}
+
+
+async function renderizarCalendarioAluno() {
+  listaCalendario.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "calendario"));
+
+  if (snap.empty) {
+    listaCalendario.innerHTML = "<p>Nenhum evento disponível.</p>";
+    return;
+  }
+
+  snap.forEach(doc => {
+    const c = doc.data();
+    listaCalendario.innerHTML += `
+      <div class="card">
+        <strong>${c.mes}/${c.ano}</strong><br>
+        ${c.imagem ? `<img src="${c.imagem}">` : ""}
+      </div>
+    `;
+  });
+}
+
+
+/* ================= AUTH ================= */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "/index.html";
+    return;
+  }
+
+  const loginAluno = user.email.split("@")[0];
+  bemVindo.innerText = `Bem-vindo, ${loginAluno}`;
+
+  const qAluno = query(
+    collection(db, "alunos"),
+    where("login", "==", loginAluno)
+  );
+
+  const snapAluno = await getDocs(qAluno);
+
+  if (snapAluno.empty) {
+    nivelAluno.innerText = "Nível não encontrado";
+    return;
+  }
+
+  const aluno = snapAluno.docs[0].data();
+nivelDoAluno = aluno.nivel;
+
+nivelAluno.innerText = `Nível: ${nivelDoAluno.toUpperCase()}`;
+headerAluno.classList.add(nivelDoAluno);
+
+await renderizarPagamentosAluno(loginAluno);
+await renderizarHorariosAluno(loginAluno);
+await renderizarTarefasAluno(nivelDoAluno);
+await renderizarProjetosAluno(nivelDoAluno);
+await renderizarCalendarioAluno();
+});
+
+</script>
+
+</body>
+</html>
