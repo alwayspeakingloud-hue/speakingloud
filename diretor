@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Área do Diretor</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+}
+
+/* HEADER */
+header {
+    background: #111827;
+    color: white;
+    padding: 20px;
+}
+
+/* LAYOUT */
+.container {
+    display: flex;
+    min-height: calc(100vh - 80px);
+}
+
+/* MENU */
+.menu {
+    width: 260px;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px;
+}
+
+.menu button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    background: #e5e7eb;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 8px;
+    transition: .2s;
+}
+
+.menu button:hover {
+    background: #d1d5db;
+}
+
+/* CONTEÚDO */
+.content {
+    flex: 1;
+    padding: 20px;
+    background: #ffffff;
+    overflow-y: auto;
+}
+
+/* CARDS */
+.card {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+/* FORM */
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+/* BOTÕES */
+button.primary {
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button.edit {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button.delete {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* TABELA */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: left;
+}
+
+/* ================= RESPONSIVO ================= */
+@media (max-width: 768px) {
+
+    .container {
+        flex-direction: column;
+    }
+
+    .menu {
+        width: 100%;
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .menu button {
+        flex: 1;
+        white-space: nowrap;
+        text-align: center;
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    input, button {
+        font-size: 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Área do Diretor</h1>
+<p>Gestão de usuários da escola</p>
+</header>
+
+<div class="container">
+
+<!-- MENU -->
+<div class="menu">
+    <button>👥 Usuários da Escola</button>
+    <button onclick="logout()">🚪 Sair</button>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="content">
+
+<div class="card">
+<h2>Criar / Editar Usuário da Escola</h2>
+
+<input id="nome" placeholder="Nome">
+<input id="login" placeholder="Login">
+<input id="senha" placeholder="Senha">
+
+<button class="primary" onclick="salvarUsuario()">Salvar usuário</button>
+</div>
+
+<div class="card">
+<h2>Usuários cadastrados</h2>
+
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Login</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="listaUsuarios"></tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import { onAuthStateChanged } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCxeGPkMp6MtrIDYtSqq31xhrEnExq5xf8",
+  authDomain: "speaking-loud.firebaseapp.com",
+  projectId: "speaking-loud",
+  storageBucket: "speaking-loud.firebasestorage.app",
+  messagingSenderId: "1002979647448",
+  appId: "1:1002979647448:web:6dc375319cd8ac3aeadcad",
+  measurementId: "G-7LSB30922J"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* 🔒 PROTEÇÃO DO DIRETOR — APENAS UMA VEZ */
+onAuthStateChanged(auth, (user) => {
+  if (!user || user.email !== "gustavoimarzinotti@speakingloud.com") {
+    window.location.href = "../index.html";
+  }
+});
+
+/* AUTH SECUNDÁRIO PARA CRIAR SECRETÁRIOS */
+let secondaryAuth;
+
+try {
+  const secondaryApp = initializeApp(firebaseConfig, "SecondarySecretario");
+  secondaryAuth = getAuth(secondaryApp);
+} catch {
+  secondaryAuth = getAuth(
+    getApps().find(app => app.name === "SecondarySecretario")
+  );
+}
+
+window.salvarUsuario = async function () {
+    const nomeVal = nome.value.trim();
+    const loginVal = login.value.trim();
+    const senhaVal = senha.value.trim();
+
+    if (!nomeVal || !loginVal || !senhaVal) {
+        alert('Preencha todos os campos');
+        return;
+    }
+
+    const emailFirebase = loginVal + "@speakingloud.com";
+
+    try {
+        // cria no AUTH
+        await createUserWithEmailAndPassword(
+            secondaryAuth,
+            emailFirebase,
+            senhaVal
+        );
+
+        // salva no FIRESTORE
+        await addDoc(collection(db, "secretarios"), {
+            nome: nomeVal,
+            login: loginVal,
+            criadoEm: new Date()
+        });
+
+        alert(
+          `Secretário criado com sucesso!\n\nNome: ${nomeVal}\nLogin: ${loginVal}`
+        );
+
+        limparCampos();
+        renderUsuarios();
+
+    } catch (error) {
+        if (error.code === "auth/email-already-in-use") {
+            alert("Esse login já existe");
+        } else {
+            alert("Erro ao criar usuário");
+            console.error(error);
+        }
+    }
+};
+
+window.excluirUsuario = async function (id, login) {
+    const confirmar = confirm(
+        `Deseja excluir o secretário "${login}"?\n\n` +
+        `⚠️ Isso remove o acesso ao sistema.`
+    );
+
+    if (!confirmar) return;
+
+    try {
+        await deleteDoc(doc(db, "secretarios", id));
+        alert("Secretário removido com sucesso!");
+        renderUsuarios();
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao excluir secretário");
+    }
+};
+
+function limparCampos(){
+    nome.value = "";
+    login.value = "";
+    senha.value = "";
+}
+
+window.logout = function () {
+    window.location.href = "/index.html";
+};
+
+async function renderUsuarios() {
+    listaUsuarios.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "secretarios"));
+
+    if (snapshot.empty) {
+        listaUsuarios.innerHTML = `
+            <tr>
+                <td colspan="3">Nenhum secretário cadastrado.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    snapshot.forEach(docSnap => {
+        const u = docSnap.data();
+        const id = docSnap.id;
+
+        listaUsuarios.innerHTML += `
+        <tr>
+            <td>${u.nome}</td>
+            <td>${u.login}</td>
+            <td>
+                <button class="delete"
+                    onclick="excluirUsuario('${id}', '${u.login}')">
+                    Excluir
+                </button>
+            </td>
+        </tr>`;
+    });
+}
+
+
+renderUsuarios();
+
+</script>
+
+</body>
+</html>
