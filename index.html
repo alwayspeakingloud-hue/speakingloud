@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speaking Loud | Login</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* CAIXA DE LOGIN */
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    text-align: center;
+}
+
+.login-box h1 {
+    margin-bottom: 10px;
+    color: #7f1d1d;
+}
+
+.login-box p {
+    margin-bottom: 30px;
+    color: #6b7280;
+}
+
+/* INPUTS */
+input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 16px;
+}
+
+/* BOTÃO */
+button {
+    width: 100%;
+    padding: 14px;
+    background: #991b1b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #7f1d1d;
+}
+
+/* ===== RESPONSIVO EXTRA ===== */
+@media (max-width: 480px) {
+
+    .login-box {
+        padding: 28px;
+    }
+
+    .login-box h1 {
+        font-size: 24px;
+    }
+
+    .login-box p {
+        font-size: 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+    <h1>Speaking Loud</h1>
+    <p>Acesso ao sistema</p>
+
+    <input id="login" placeholder="Login">
+    <input id="senha" type="password" placeholder="Senha">
+
+    <button onclick="loginSistema()">Entrar</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  query, 
+  where 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCxeGPkMp6MtrIDYtSqq31xhrEnExq5xf8",
+  authDomain: "speaking-loud.firebaseapp.com",
+  projectId: "speaking-loud",
+  storageBucket: "speaking-loud.firebasestorage.app",
+  messagingSenderId: "1002979647448",
+  appId: "1:1002979647448:web:6dc375319cd8ac3aeadcad",
+  measurementId: "G-7LSB30922J"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const EMAIL_DIRETOR = "gustavoimarzinotti@speakingloud.com";
+
+/* ================= LOGIN ================= */
+window.loginSistema = async function () {
+    const login = document.getElementById("login").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+
+    if (!login || !senha) {
+        alert("Preencha login e senha");
+        return;
+    }
+
+    const emailFirebase = login.includes("@")
+        ? login
+        : login + "@speakingloud.com";
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            emailFirebase,
+            senha
+);
+
+  const user = userCredential.user;
+
+// 1️⃣ DIRETOR
+if (emailFirebase === EMAIL_DIRETOR) {
+    window.location.href = "diretor/dashboard.html";
+    return;
+}
+
+// 2️⃣ ALUNO
+const alunoQuery = query(
+    collection(db, "alunos"),
+    where("login", "==", login)
+);
+
+const alunoSnap = await getDocs(alunoQuery);
+
+if (!alunoSnap.empty) {
+    const aluno = alunoSnap.docs[0].data();
+    localStorage.setItem("alunoLogado", JSON.stringify(aluno));
+    window.location.href = "aluno/dashboard.html";
+    return;
+}
+
+// 3️⃣ QUALQUER OUTRO → ESCOLA
+window.location.href = "escola/dashboard.html";
+
+    } catch (error) {
+        console.error(error);
+        alert("Login ou senha inválidos");
+    }
+};
+</script>
+
+
+</body>
+</html>
